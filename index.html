@@ -22,7 +22,12 @@ h1{font-size:17px;margin:0}
 .btn{width:100%;padding:12px;border:0;border-radius:10px;background:var(--accent);color:var(--accent-t);font-size:16px;font-weight:bold}
 .btn.sec{background:transparent;color:var(--text);border:1px solid var(--line);font-weight:normal}
 .btn.sm{width:auto;padding:7px 12px;font-size:14px}
-video{width:100%;border-radius:10px;background:#000;display:none;aspect-ratio:1/1;object-fit:cover}
+.scanner-wrap{position:relative;width:100%;border-radius:12px;overflow:hidden;background:#000;display:none;aspect-ratio:1/1}
+.scanner-wrap video{width:100%;height:100%;object-fit:cover;display:block}
+.scan-overlay{position:absolute;inset:0;pointer-events:none}
+.scan-guide{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:72%;height:72%;border:2px dashed rgba(255,255,255,0.7);border-radius:16px;box-shadow:0 0 0 9999px rgba(0,0,0,0.35);overflow:hidden}
+.scan-laser{position:absolute;width:100%;height:2px;background:#5fd68a;box-shadow:0 0 8px #5fd68a;animation:scanAnim 2s infinite ease-in-out}
+@keyframes scanAnim{0%{top:5%}50%{top:90%}100%{top:5%}}
 #res{border-radius:12px;padding:16px;text-align:center;margin-top:10px;display:none}
 #res .big{font-size:24px;font-weight:bold}
 #res .nm{font-size:19px;margin-top:6px;font-weight:bold}
@@ -41,9 +46,26 @@ textarea{width:100%;height:120px;margin-top:8px;font-size:12px;background:var(--
 
 <div id="p-scan">
   <div class="card">
-    <video id="vid" playsinline muted></video><canvas id="cv" class="hide"></canvas>
-    <button class="btn" id="camBtn">Start camera</button>
-    <div class="muted" id="camMsg" style="margin-top:8px"></div>
+    <div id="scanWrap" class="scanner-wrap">
+      <video id="vid" playsinline muted autoplay></video>
+      <div id="scanOverlay" class="scan-overlay hide">
+        <div class="scan-guide">
+          <div class="scan-laser"></div>
+        </div>
+      </div>
+    </div>
+    <canvas id="cv" class="hide"></canvas>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="btn" id="camBtn">Start camera</button>
+      <button class="btn sec hide" id="switchCamBtn" title="Switch camera" style="width:auto;padding:12px 16px">🔄</button>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:8px;flex-wrap:wrap">
+      <div class="muted" id="camMsg"></div>
+      <label style="font-size:13px;color:var(--accent);cursor:pointer;white-space:nowrap;margin-left:auto;text-decoration:underline">
+        📁 Upload QR image
+        <input type="file" id="qrFile" accept="image/*" class="hide">
+      </label>
+    </div>
     <div id="res"></div>
   </div>
 </div>
@@ -62,7 +84,12 @@ textarea{width:100%;height:120px;margin-top:8px;font-size:12px;background:var(--
 </div>
 <div class="muted" style="text-align:center;margin-top:6px">Check-ins are saved on this device only.</div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<script src="jsqr.min.js"></script>
+<script>
+if (typeof jsQR === "undefined") {
+  document.write('<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"><\/script>');
+}
+</script>
 <script>
 const DATA=[["U7D89MH3","Nidhi Hooda","Maharishi Markandeshwar University, Mullana"],["UD6F63B5","Kunal Bansal","Maharishi Markandeshwar University, Mullana"],["U53YNC62","Salam Shah","Maharishi Markandeshwar University (MMU), Ambala"],["U63CU4Q1","Ketan","Maharishi Markandeshwar University, Mullana"],["U3A3H3Z9","Rahul Kumar","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U47AT21U","Toshar Nandwani","Maharishi Markandeshwar University, Mullana"],["U1AS02B4","Hiten Sapra","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U3L7WC22","Jasleen Kaur","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UR3685EB","Himanshi Bansal","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U4NC59D2","Anurag Kumar","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U42M2H7Q","Ishika Panwar","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U94TFQ31","Aaneya","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UX0W255Q","Kawaldeep Verma","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U68J8X5D","Lakshay","Maharishi Markandeshwar University, Mullana"],["U0M171WP","Shivam","Maharishi Markandeshwar University, Mullana"],["U25TDG19","Honey Sharma","Maharishi Markandeshwar University (MMU), Ambala"],["U49R4N5D","Dipika Barman","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UB1272RU","Akshat sharma","Maharishi Markandeshwar University (MMU), Ambala"],["U9ENK004","Lakshay arora","Maharishi Markandeshwar University, Mullana"],["UD0N7A17","Mehak Goyal Goyal","Maharishi Markandeshwar University, Mullana"],["U6JH088K","Nikhil Badoni","Maharishi Markandeshwar University (MMU), Ambala"],["U1QC73A4","Kumar Baibhav","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U1JQU971","VINAYAK KUMAR MISHRA","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UKI778V2","NITISH KUMAR BARNWAL","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U8O1C0A2","SAAMRA DESWAL","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U9FR77M0","Paras aggarwal","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U149EY7Z","Sumit","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UU5D2Y55","Piyush Kamboj","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U8U3BO96","Lakshay Kansal","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U1A8C20H","Deewakar Shah","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U159V2RC","Jashandeep Singh Singh","Maharishi Markandeshwar University (MMU), Ambala"],["U6C5RO26","Bharti","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UAY6948T","Khushant Ror","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U745H1OU","Pratyush Kumar","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U33G7JR1","Prachi Kumari","Maharishi Markandeshwar University, Mullana"],["U78XA6M2","Twinkle","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U5X868AN","Tanish","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UT6N8X24","Keshav","Maharishi Markandeshwar University (MMU), Ambala"],["URY83G45","Alok Kumar","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UG4D45L5","Ankit Kumar","Maharishi Markandeshwar University, Mullana"],["U05M7ZD2","Hitesh bhatnager","Maharishi Markandeshwar University, Mullana"],["UF45ZV29","Anurag Nautiyal","Maharishi Markandeshwar University, Mullana"],["U94B4IU1","Vansh Saini","Maharishi Markandeshwar University (MMU), Ambala"],["U8TG21O9","Mridul Gandhi","Maharishi Markandeshwar University, Mullana"],["U8Q3NX31","Saurabh Tiwari","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UO6XE182","Anamika Semwal","Maharishi Markandeshwar University, Mullana"],["U2O89PT3","DHIRAJ YADAV RAJ","Maharishi Markandeshwar University, Mullana"],["UG5R979Z","Anirudh Singh","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UP56J6E4","Anuj Bhardwaj Bhardwaj","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U1E43DZ3","Abhi Ram","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U33OQ4K6","Aryan Gupta","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UM139BN4","Nidhi","Maharishi Markandeshwar University, Mullana"],["U8W47UD4","Kanak Bhardwaj","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U26MA2R1","Udayveer Singh Singh","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U26R53OU","Yogesh rana","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U643NYB9","Harsh Raj","Maharishi Markandeshwar University (MMU), Ambala"],["UJ572X0O","Drishti Grover","Maharishi Markandeshwar University, Mullana"],["URH896T6","PRADEEP KUMAR","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U82I1T6L","Anubhav Raj","Maharishi Markandeshwar University, Mullana"],["U476GO9J","Yash Jindal","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UES868B0","Faizan Khan","Maharishi Markandeshwar University (MMU), Ambala"],["U5G05H3N","Mohammad Danish","Maharishi Markandeshwar University, Mullana"],["U7NHV693","Jhanvi Sharma","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U5SZ582P","Priyanshu Astwal","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U2VNF946","Rajwinder Kaur","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U3L4HP62","Guda Haresh dora dora","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U2N133GP","Sudhanshu","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U418RCF7","Bhavya Kumar Mishra","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U03W7F1E","Aryan Sharma","Maharishi Markandeshwar University (MMU), Ambala"],["U682N2SH","Prateek Singh","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U51OY9H7","Samarpreet Singh","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U355CSJ9","Himanshu Raj","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U393I7RH","Raja Kumar","Maharishi Markandeshwar University, Mullana"],["UDC79S21","Mohammad Ali","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UJH69M45","Shivam Kumar","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U2L416SE","Dishant Naik","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UFIY3840","Rakshit jain","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U8CPY590","Khushboo","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UMX068H9","Sanyam Mehta","Maharishi Markandeshwar University, Mullana"],["U264XF3O","Tarun Khurana","Maharishi Markandeshwar University, Mullana"],["UDM910W4","Ashutosh Dhynai","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UK222FE6","Jashan Kamboj","Maharishi Markandeshwar University, Mullana"],["UH819V7M","Aaryan Kamboj","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UC8F2S97","Yash Dhiman","Maharishi Markandeshwar University, Mullana"],["UC9TE119","Prabhkirat Prabh","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U3Q33X8O","Tejal","Maharishi Markandeshwar University, Mullana"],["U9KIQ907","Aman Kumar","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UMC81Z50","Aman Kumar","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U9IRZ581","Shivam Mishra","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U3GLI607","Lakshay Tomar","Maharishi Markandeshwar University, Mullana"],["UD93TX38","Virbhushan Kumar","Maharishi Markandeshwar University, Mullana"],["UCE2W293","Khushi","Maharishi Markandeshwar University (MMU), Ambala"],["UNR56Y67","Vansh Goel","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UE607H7C","MANPREET","Maharishi Markandeshwar University (MMU), Ambala"],["UT4HB291","Gagan","Maharishi Markandeshwar University, Mullana"],["U46JU43D","Netan Sharma","Maharishi Markandeshwar University (MMU), Ambala"],["U9V9XP42","Ishika","Maharishi Markandeshwar University, Mullana"],["UC32F4W7","keshav garg","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["URI9915Z","HARSHIT JAISWAL","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UU2729HF","Aksh Kaliraman","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U5PH727N","Dipanshu","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UJ2MT625","Anant Sharma","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UT05A3D8","Tanvi Gautam","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U3ZB7L05","Pranav Sagar","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U927QLS5","Shakshi Kumari","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UK73T9C5","Himanshu chauhan","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U972M2WQ","Prince Kashyap","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UO2L367Y","Hanish Sood","Maharishi Markandeshwar University, Mullana"],["UR1634QC","Arpit","Maharishi Markandeshwar University, Mullana"],["U8T92ML6","Suman Gupta","Maharishi Markandeshwar University, Mullana"],["UI69X2R2","Aniket Walia","Maharishi Markandeshwar University, Mullana"],["UC728D9F","Abhijeet Kumar Sah","Maharishi Markandeshwar University, Mullana"],["UD3072WX","DHANESH KUMAR","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U6L1ZW56","Saksham Bansal","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U6Q007KO","Deepu Gupta","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U3EW8V48","Kanhai Kumar","Maharishi Markandeshwar University, Mullana"],["U2L870IA","Aryan Deswal","Maharishi Markandeshwar University, Mullana"],["UI6H0L65","Lakshay Kaushik","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UQT620W3","Harsh Harsh","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UD6M9U16","Shorya Shekhawat","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UC2XU043","Diksha","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UZS27D29","Love Panchal","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U5V32KP9","Milan","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U465LFI5","Abhishek Pathaneya","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U1QK8O03","Dhruv Verma","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U74GP66D","Lovepreet Singh","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U83M7JY3","Mayank","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UD4U56V4","Gokul Jain","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["USM5L809","Snehi","Maharishi Markandeshwar University, Mullana"],["U1T1N16Q","Piyush Jain","Maharishi Markandeshwar University, Mullana"],["UN38YK32","Ishan Sharma","Maharishi Markandeshwar University, Mullana"],["UG5Z340J","Abhay Singh Chauhan","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U8U0L13I","Archi Popli","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U6NY2I39","Jiya Bhola","Maharishi Markandeshwar University, Mullana"],["U190OL7N","MAHESHWARI","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U5YJ5U76","Akash Kumar Singh","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UO9718TD","Harsh","Maharishi Markandeshwar University, Mullana"],["UWX2044S","Subhash Kumar","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UWI842A5","Ashish Kumar","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U71E3Z0M","Aryan Singh","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U5M6T54I","Aman Kumar","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U0800ZHV","Rajesh Singh","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UVN2698T","Shubham Mishra","Maharishi Markandeshwar University (MMU), Ambala"],["U628GJS6","Monika Kumari sah","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U8869IUH","Ashika","Maharishi Markandeshwar University (MMU), Ambala"],["UV8NX162","Tanish Solanki","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UB9D533P","Bablu Yadav","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U2C15M9N","Aditya","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UVI24F06","Injmamul Haque","Maharishi Markandeshwar University (MMU), Ambala"],["U4C6UY78","Abhay Pathak Pathak","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U7USR329","Krish","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U3JP984H","Udit","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U5D53C5X","Deepali","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UG833ZS2","Natik Garg","Maharishi Markandeshwar University, Mullana"],["UI9GT287","Nidhish Garg","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UW6A50L8","Kumari sandhya","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U6QHU475","Aarchi","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["US344ZO4","Krish Kamboj","Maharishi Markandeshwar University, Mullana"],["U68F7E3R","Garima Garg","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U800XG5U","Deepak Goel","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U1GK519Z","Anjali Chauhan","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U1990YBU","Ashish Hooda","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U9RO711J","SHUBHAM KUMAR","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U3H2A55Z","Isha","Maharishi Markandeshwar University (MMU), Ambala"],["U3B1E07N","Vansh Verma","Maharishi Markandeshwar University, Mullana"],["U1TDB956","Uday","Maharishi Markandeshwar University (MMU), Ambala"],["UXU3I892","Gautam Bhatt","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UF22NS42","Yash Dhanda","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U9VM95I8","Prikshit Ruhal","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U3H8DB40","Aryan Gurjar","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U864QS4C","Naman Phour","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UO6V228T","Tejas Dhiman Dhiman","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U4IV6F44","Piyush Dhiman Dhiman","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U228H2TQ","Rachit Dhiman","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U7249EGA","Shubham Dhiman","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U47YO9D5","Aditya Aditya","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U64Z3VR2","Rahul Danoda","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U7J5H4Z9","Sahaj Gulati","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["USMN3545","Harsh Dhiman","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UH3PB083","Saurbh Mundhal","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U83C9ZO4","Vaibhav","Maharishi Markandeshwar University, Mullana"],["UT8I57E8","Harshita Dhingra","Maharishi Markandeshwar University, Mullana"],["U11M1U3Y","Miku Kumar","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U4J93TY5","Ansh Verma","Maharishi Markandeshwar University (MMU), Ambala"],["UY850VD4","Ayush Raj","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U7C77O5N","Vishal Saini","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UB6EH646","Sanjana kumari Pathak","Maharishi Markandeshwar University, Mullana"],["U24M8O3K","Jashan Sachdeva","Maharishi Markandeshwar University (MMU), Ambala"],["U4PO38A4","Ishika Kamboj","Maharishi Markandeshwar University (MMU), Ambala"],["UR0L29D6","Khushbu","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UD727A9F","Shivam","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U33FA29Y","Deeksha Sharma","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UP895I8Q","Kirti Gumber","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U8AX853T","Mankirat","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UAV75Q47","Uday Kumar","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UX4G536P","Vishal Chadda","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U1914KYX","Akanksha","Maharishi Markandeshwar University, Mullana"],["U8TG22M7","Prachi","Maharishi Markandeshwar University, Mullana"],["U1D2V5R4","Mohit","Maharishi Markandeshwar University, Mullana"],["U30QJN88","Suryansh Thakur","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U25U98PE","Divyam Rajput","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U0LQ93K0","Aditya Sharma","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U43V1H4K","Paras Verma","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UMB34R78","vivek","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U112MX3W","Drishti","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UN187FL6","Komal Bajwa","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UH2PN250","Yuvraj Pundir","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U8MH34V4","Ansh Mittal","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U0C49XI3","Aryan Dhiman Dhiman","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UL68UO97","Md Daniyal","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U4641NQM","priti kumari","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UU045FQ8","Akshat Mittal","Maharishi Markandeshwar University, Mullana"],["UKEC2440","Seerat","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UB50EN31","RISHI","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U14SM5X4","Vikash Kumar","Maharishi Markandeshwar University, Mullana"],["U50A7VG1","Navjot Singh","Maharishi Markandeshwar University, Mullana"],["UT699Q2L","Niraj Kumar Mandal","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U6C05GT6","Anshu Kumari","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UZ22YI89","Aadit Saroha","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U3436OAI","Namit Garg","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U44A4R8E","Ravnit Kaur","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U6Q156JS","Raunak Kumar","Maharishi Markandeshwar University (MMU), Ambala"],["U5G296PU","Golu Raj","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U50ZCJ65","Tanuj Gulati","Maharishi Markandeshwar University, Mullana"],["U95SE30X","Chakshu Malhotra Malhotra","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U255WV7C","Palaksha Pal","Maharishi Markandeshwar University, Mullana"],["U31B1K2G","Anushka","Maharishi Markandeshwar University, Mullana"],["U7X0CU89","Deepak","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U57KX02W","Aditya Kumar Kumar","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U41VH0T6","Amrit Kumar","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UT954X5W","Pravin Kushwaha","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U6ZBU611","Aniket Kudawla","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UB12NG03","Sania Khatun","Maharishi Markandeshwar University, Mullana"],["UW15S2T2","Aman Kumar Kumar","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UB33O6S5","Mohammad Saif Ali","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U2L016ZS","Kapil Mehta","Maharishi Markandeshwar University, Mullana"],["U583DUK3","Ashish Kumar Mishra","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U772P8IO","Bhaavya Kaushal","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U6E1H16T","Gitika Rathee","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U3Y67R5S","Tanmay Kumar","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U33J7I3F","Khushboo Khushboo","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U937SL9G","Abhishek Singh","Maharishi Markandeshwar University, Mullana"],["UT2I0N53","Ankit","Maharishi Markandeshwar University (MMU), Ambala"],["U7B9PF14","Krishna Biswas","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["URGN1662","Yuvraj Jaglan","Maharishi Markandeshwar University, Mullana"],["U1A4LD88","Himanshi Gujjar","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U4UA9Q80","Ravish Kamboj","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UJ7E59I1","Sujal","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U779BP6Y","Sahil Gulati","Maharishi Markandeshwar University, Mullana"],["U5SJ484I","Nikhilesh Mehra","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U5N4C8E8","Ishant Sharma","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UK08SH57","Azhar Azhar","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UV648L9A","Yash","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UGQ9Z541","Kishan Kumar","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U6HXL993","Raushan Kumar Kumar","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UT684DG4","Manjeet Singh","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UN56F7J0","Pema Yuden","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UC7W9D22","Prem Jaishwal","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UX791GQ2","Anaditya Tayal","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UJ777KO3","Tanishq","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U76A6GU1","Ajit kumar Mandal Mandal","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UJI3A052","Divyam Shrivastav","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U16A4UM0","Sonam Saini","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U6ND991U","Jai Saini","Maharishi Markandeshwar University (MMU), Ambala"],["UYP837K1","Arpit Wadhwa","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U85I2TD2","Nidhi Pal","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UPL0251E","Prince Kumar","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U1S660HF","Sonam","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UA11K05W","Vansh Kumar","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["US29D0W1","Yuvraj","Maharishi Markandeshwar University (MMU), Ambala"],["U7Y4FO17","Seerat","Maharishi Markandeshwar University, Mullana"],["U6O43DM1","Muskan Kaushal Kaushal","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UQO8463K","Yogya kaushish","Maharishi Markandeshwar University (MMU), Ambala"],["UWYD8618","Ajay Saini","Maharishi Markandeshwar University (MMU), Ambala"],["U838BIF6","Preet Kaur","Maharishi Markandeshwar University, Mullana"],["U3Z041VR","Aryan Sinha","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UKH5E398","Minanshu Panjeta","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UMY175T3","Guddu Yadav","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U833MZI4","Sumitsingh Sikarwar","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UZ7HO503","Navya Garg","Maharishi Markandeshwar University (MMU), Ambala"],["U8W3GT04","Renu Saini","Maharishi Markandeshwar University (MMU), Ambala"],["UG59TD94","Tejaswi Bathula","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U7CE19J3","Hepsiba Erugurala","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UG7FD119","Sanju Kumari Kushwaha","Maharishi Markandeshwar University (MMU), Ambala"],["UD1YM139","Prince Duby","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U1935ETD","Jashan Saini","Maharishi Markandeshwar University (MMU), Ambala"],["U258Y8HA","Rahul","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U16ZIY15","Sushmitha Dasari","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U3H5EZ23","Deval Jain","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UWS2519V","Diler singh","Maharishi Markandeshwar University, Mullana"],["UUB0N309","Sachin Garg","Maharishi Markandeshwar University (MMU), Ambala"],["UI382D9S","Pooja Saini","Maharishi Markandeshwar University (MMU), Ambala"],["U79K9QR4","Shayka Sana","Maharishi Markandeshwar University (MMU), Ambala"],["U4W8E1S6","Krish Rana","Maharishi Markandeshwar University, Mullana"],["UV308XI4","Aditya Saini","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U5T8K6Q9","Kamaldeep","Maharishi Markandeshwar University (MMU), Ambala"],["U50UG73H","Paravdeep","Maharishi Markandeshwar University (MMU), Ambala"],["U1BPW672","Malkeet Singh","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U9Y357QZ","Kashvi","Maharishi Markandeshwar University (MMU), Ambala"],["UP34A9B8","Aakash Kumar sah Kumar sah","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U96E5Z5C","Dev Kamboj","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UP1E2L93","Kavya Saini","Maharishi Markandeshwar University (MMU), Ambala"],["U198KX4A","Roshan Kumar","Maharishi Markandeshwar University, Mullana"],["U2R214HN","Purav","Maharishi Markandeshwar University, Mullana"],["U1DI6U03","Shubham Tiwari","Maharishi Markandeshwar University, Mullana"],["U234X5LA","Keshav Sood","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U2MF6U21","Suhani Kumari Kumari","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UFM367L1","Nikita Kumari","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U71MF5C6","Yuvraj Rohilla","Maharishi Markandeshwar University (MMU), Ambala"],["UGL60N17","Yogesh Kumar Yadav Yadav","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U097FMC0","Bharath Ram","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UY02P63W","Aditya Kumar","Maharishi Markandeshwar University, Mullana"],["U37L9V9T","Radha","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U2ES92G6","Rishabh Baghal","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U5NGF537","Shivam Saini","Maharishi Markandeshwar University (MMU), Ambala"],["U4F6PW07","Jagriti Saini","Maharishi Markandeshwar University, Mullana"],["U082M3JW","Bhavesh Sharma","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UL5796EB","Ansh Dang","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U53I37RP","Mahi Choudhary","Maharishi Markandeshwar University, Mullana"],["U37UPX60","Yamini","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UQ627S8Y","Varun","Maharishi Markandeshwar University (MMU), Ambala"],["U96Z10CR","Parshav","Maharishi Markandeshwar University, Mullana"],["UU442P8V","Jay Chaudhary","Maharishi Markandeshwar University, Mullana"],["UZ18TQ41","Vidhi Vig","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U2YS88U7","Dipanshu saini","Maharishi Markandeshwar University, Mullana"],["UR54SY64","Tejas K","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U392GJT6","Najam Alam","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U8579LSF","Abunasar","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UP302DT8","Lovepreet Singh","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UH71G74C","Ravi Rajput","Maharishi Markandeshwar University, Mullana"],["UH793C0W","Angad","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UYH6M431","Sunny Yadav","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UZR2218O","Vipul Gupta","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["UJ04VK10","Divyanshu Anand","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U7965XTD","Vivek NA","Maharishi Markandeshwar University, Mullana"],["U36CW13A","Kishan Sah","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U9G4UB33","Simran Kaur","Maharishi Markandeshwar Engineering College (MMEC), Mullana"],["U1SR837N","Diya","Maharishi Markandeshwar Engineering College (MMEC), Mullana"]]; // [id, name, college]
 const BY=Object.fromEntries(DATA.map(r=>[r[0].toUpperCase(),r]));
@@ -82,44 +109,295 @@ function show(t){for(const k in tabs){$("p-"+k).classList.toggle("hide",k!==t);$
   if(t!=="scan")stopCam();if(t==="find")renderList();if(t==="log")renderLog()}
 for(const k in tabs)$(tabs[k]).onclick=()=>show(k);
 
+// audio feedback
+let audioCtx = null;
+function playBeep(kind) {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === "suspended") audioCtx.resume();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    const t = audioCtx.currentTime;
+
+    if (kind === "ok") {
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(880, t);
+      osc.frequency.setValueAtTime(1174.66, t + 0.08);
+      gain.gain.setValueAtTime(0.2, t);
+      gain.gain.exponentialRampToValueAtTime(0.01, t + 0.25);
+      osc.start(t);
+      osc.stop(t + 0.25);
+    } else if (kind === "warn") {
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(440, t);
+      osc.frequency.setValueAtTime(370, t + 0.1);
+      gain.gain.setValueAtTime(0.2, t);
+      gain.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
+      osc.start(t);
+      osc.stop(t + 0.3);
+    } else {
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(220, t);
+      gain.gain.setValueAtTime(0.2, t);
+      gain.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
+      osc.start(t);
+      osc.stop(t + 0.3);
+    }
+  } catch (e) {}
+}
+
 // result panel
 function showRes(kind,big,name,sub,undoId){
+  playBeep(kind);
   const r=$("res");r.className=kind;r.style.display="block";
   r.innerHTML='<div class="big">'+big+'</div>'+(name?'<div class="nm">'+esc(name)+'</div>':'')+(sub?'<div class="sub">'+esc(sub)+'</div>':'')+
     (undoId?'<div style="margin-top:10px"><button class="btn sec sm" id="undo">Undo check-in</button></div>':'');
   if(undoId)$("undo").onclick=()=>{delete ci[undoId];save(ci);updCount();r.style.display="none"};
   if(navigator.vibrate)navigator.vibrate(kind==="ok"?60:[80,60,80]);
 }
+
 function handleId(raw){
-  const id=(raw||"").trim().toUpperCase(), s=BY[id];
-  if(!s){showRes("bad","✗ NOT REGISTERED","",'Scanned: '+(raw||"").slice(0,40));return}
-  if(ci[s[0]]){showRes("warn","⚠ ALREADY CHECKED IN",s[1],"Entered at "+fmt(ci[s[0]])+" · "+s[0]);return}
-  ci[s[0]]=new Date().toISOString();save(ci);updCount();
-  showRes("ok","✓ REGISTERED",s[1],s[2]+" · "+s[0],s[0]);
+  if (!raw) return;
+  let id = String(raw).trim().toUpperCase();
+  let s = BY[id];
+  if (!s) {
+    const m = id.match(/\b(U[A-Z0-9]{7})\b/);
+    if (m && BY[m[1]]) {
+      id = m[1];
+      s = BY[id];
+    }
+  }
+  if (!s) {
+    showRes("bad", "✗ NOT REGISTERED", "", 'Scanned: ' + id.slice(0, 40));
+    return;
+  }
+  if (ci[s[0]]) {
+    showRes("warn", "⚠ ALREADY CHECKED IN", s[1], "Entered at " + fmt(ci[s[0]]) + " · " + s[0]);
+    return;
+  }
+  ci[s[0]] = new Date().toISOString();
+  save(ci);
+  updCount();
+  showRes("ok", "✓ REGISTERED", s[1], s[2] + " · " + s[0], s[0]);
 }
 
-// camera
-let stream=null,raf=0,last="",lastT=0;
-const vid=$("vid"),cv=$("cv"),cx=cv.getContext("2d",{willReadFrequently:true});
-async function startCam(){
-  $("camMsg").textContent="";
-  try{
-    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"},audio:false});
-    vid.srcObject=stream;await vid.play();vid.style.display="block";$("camBtn").textContent="Stop camera";tick();
-  }catch(e){stopCam();$("camMsg").textContent="Camera not available here ("+(e.name||"error")+"). Use the Search tab instead."}
-}
-function stopCam(){cancelAnimationFrame(raf);if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
-  vid.style.display="none";$("camBtn").textContent="Start camera"}
-function tick(){
-  if(!stream)return;
-  if(vid.readyState>=2&&window.jsQR){
-    const w=480,h=Math.round(w*vid.videoHeight/vid.videoWidth)||w;cv.width=w;cv.height=h;cx.drawImage(vid,0,0,w,h);
-    const c=jsQR(cx.getImageData(0,0,w,h).data,w,h,{inversionAttempts:"dontInvert"});
-    if(c&&c.data&&(c.data!==last||Date.now()-lastT>3000)){last=c.data;lastT=Date.now();handleId(c.data)}
+// camera & scanner engine
+let stream = null, raf = 0, last = "", lastT = 0;
+let isScanning = false, lastScanTime = 0;
+let currentCamIndex = 0, videoDevices = [];
+let barcodeDetector = null;
+
+if ("BarcodeDetector" in window) {
+  try {
+    barcodeDetector = new BarcodeDetector({ formats: ["qr_code"] });
+  } catch (e) {
+    barcodeDetector = null;
   }
-  raf=requestAnimationFrame(tick);
 }
-$("camBtn").onclick=()=>stream?stopCam():startCam();
+
+const vid = $("vid"), cv = $("cv"), cx = cv.getContext("2d", { willReadFrequently: true });
+
+async function refreshVideoDevices() {
+  try {
+    const devs = await navigator.mediaDevices.enumerateDevices();
+    videoDevices = devs.filter(d => d.kind === "videoinput");
+    const switchBtn = $("switchCamBtn");
+    if (switchBtn) {
+      if (videoDevices.length > 1) switchBtn.classList.remove("hide");
+      else switchBtn.classList.add("hide");
+    }
+  } catch (e) {}
+}
+
+async function startCam(deviceId) {
+  $("camMsg").textContent = "Opening camera...";
+  if (stream) stopCam();
+
+  if (typeof jsQR === "undefined" && !barcodeDetector) {
+    $("camMsg").textContent = "Scanner library is loading, please wait...";
+    setTimeout(() => startCam(deviceId), 500);
+    return;
+  }
+
+  const videoConstraints = deviceId
+    ? { deviceId: { exact: deviceId } }
+    : {
+        facingMode: { ideal: "environment" },
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+      };
+
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: videoConstraints,
+      audio: false
+    });
+  } catch (err) {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    } catch (e2) {
+      stopCam();
+      $("camMsg").textContent = "Camera not available (" + (e2.name || "error") + "). Try uploading a QR image or use Search.";
+      return;
+    }
+  }
+
+  try {
+    vid.srcObject = stream;
+    await vid.play();
+    $("scanWrap").style.display = "block";
+    $("scanOverlay").classList.remove("hide");
+    $("camBtn").textContent = "Stop camera";
+    $("camMsg").textContent = "Align QR code inside the box to scan";
+
+    await refreshVideoDevices();
+
+    isScanning = false;
+    raf = requestAnimationFrame(scanTick);
+  } catch (err) {
+    stopCam();
+    $("camMsg").textContent = "Could not start video: " + (err.message || err.name);
+  }
+}
+
+function stopCam() {
+  if (raf) {
+    cancelAnimationFrame(raf);
+    raf = 0;
+  }
+  if (stream) {
+    stream.getTracks().forEach(t => t.stop());
+    stream = null;
+  }
+  $("scanWrap").style.display = "none";
+  $("scanOverlay").classList.add("hide");
+  $("camBtn").textContent = "Start camera";
+  $("camMsg").textContent = "";
+}
+
+const SCAN_INTERVAL_MS = 80;
+
+async function scanTick() {
+  if (!stream) return;
+
+  const now = performance.now();
+  if (now - lastScanTime >= SCAN_INTERVAL_MS && !isScanning) {
+    if (vid.readyState >= vid.HAVE_CURRENT_DATA && vid.videoWidth > 0) {
+      isScanning = true;
+      lastScanTime = now;
+      try {
+        let codeData = null;
+
+        // 1. Native hardware-accelerated BarcodeDetector (fastest on modern mobile browsers)
+        if (barcodeDetector) {
+          try {
+            const results = await barcodeDetector.detect(vid);
+            if (results && results.length > 0 && results[0].rawValue) {
+              codeData = results[0].rawValue;
+            }
+          } catch (e) {}
+        }
+
+        // 2. High-clarity jsQR fallback (scans at up to 960px resolution with attemptBoth)
+        if (!codeData && window.jsQR) {
+          const vw = vid.videoWidth;
+          const vh = vid.videoHeight;
+          let targetW = vw;
+          let targetH = vh;
+          const maxDim = 960;
+          if (Math.max(vw, vh) > maxDim) {
+            const scale = maxDim / Math.max(vw, vh);
+            targetW = Math.round(vw * scale);
+            targetH = Math.round(vh * scale);
+          }
+
+          if (cv.width !== targetW || cv.height !== targetH) {
+            cv.width = targetW;
+            cv.height = targetH;
+          }
+
+          cx.drawImage(vid, 0, 0, targetW, targetH);
+          const imgData = cx.getImageData(0, 0, targetW, targetH);
+          const qr = jsQR(imgData.data, targetW, targetH, {
+            inversionAttempts: "attemptBoth"
+          });
+          if (qr && qr.data) {
+            codeData = qr.data;
+          }
+        }
+
+        if (codeData && (codeData !== last || Date.now() - lastT > 2500)) {
+          last = codeData;
+          lastT = Date.now();
+          handleId(codeData);
+        }
+      } catch (e) {
+        console.error("Scan error:", e);
+      } finally {
+        isScanning = false;
+      }
+    }
+  }
+
+  if (stream) {
+    raf = requestAnimationFrame(scanTick);
+  }
+}
+
+$("camBtn").onclick = () => stream ? stopCam() : startCam();
+
+$("switchCamBtn").onclick = async () => {
+  if (!videoDevices.length) await refreshVideoDevices();
+  if (videoDevices.length <= 1) return;
+  currentCamIndex = (currentCamIndex + 1) % videoDevices.length;
+  await startCam(videoDevices[currentCamIndex].deviceId);
+};
+
+const qrFile = $("qrFile");
+if (qrFile) {
+  qrFile.onchange = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    $("camMsg").textContent = "Decoding image...";
+    const img = new Image();
+    img.onload = async () => {
+      URL.revokeObjectURL(img.src);
+      try {
+        let codeData = null;
+        if (barcodeDetector) {
+          try {
+            const barcodes = await barcodeDetector.detect(img);
+            if (barcodes && barcodes.length > 0) codeData = barcodes[0].rawValue;
+          } catch(e) {}
+        }
+        if (!codeData && window.jsQR) {
+          cv.width = img.width;
+          cv.height = img.height;
+          cx.drawImage(img, 0, 0);
+          const imgData = cx.getImageData(0, 0, img.width, img.height);
+          const qr = jsQR(imgData.data, img.width, img.height, { inversionAttempts: "attemptBoth" });
+          if (qr && qr.data) codeData = qr.data;
+        }
+        if (codeData) {
+          $("camMsg").textContent = "QR code recognized!";
+          handleId(codeData);
+        } else {
+          showRes("bad", "✗ NOT RECOGNIZED", "", "Could not detect a QR code in this image");
+          $("camMsg").textContent = "No QR code found in selected image.";
+        }
+      } catch (err) {
+        showRes("bad", "✗ ERROR", "", err.message || "Failed to process image");
+      }
+    };
+    img.onerror = () => {
+      $("camMsg").textContent = "Could not load image.";
+    };
+    img.src = URL.createObjectURL(file);
+    qrFile.value = "";
+  };
+}
 
 // search
 function renderList(){
